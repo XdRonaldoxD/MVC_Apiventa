@@ -1,0 +1,18 @@
+{
+    "require": {
+        "dompdf/dompdf": "^1.0",
+        "firebase/php-jwt": "3.0.0",
+        "maatwebsite/excel": "^3.1",
+        "milon/barcode": "7.0",
+        "chillerlan/php-qrcode": "^4.3",
+        "phpoffice/phpspreadsheet": "^1.20",
+        "pusher/pusher-php-server": "^7.0",
+        "illuminate/database": "5.1.8",
+        "doctrine/dbal": "^3.2"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4.23"
+        }
+    }
+}
