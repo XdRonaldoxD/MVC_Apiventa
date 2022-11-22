@@ -304,11 +304,11 @@
     <table class="w-100 fs-small">
         <tr>
             <td class="w-50">
-                <p>OP. GRAVADA</p>
+                <p>TOTAL AFECTO</p>
 
             </td>
             <td class="w-50">
-                <p> S/<?= number_format($negocios[0]['valorneto_negocio_detalle'], 2) ?></p>
+                <p> S/<?= number_format($total_afecto, 2) ?></p>
             </td>
         </tr>
         <tr>
@@ -317,7 +317,7 @@
 
             </td>
             <td class="w-50">
-                <p> S/<?= number_format($negocios[0]['iva_negocio_detalle'], 2) ?></p>
+                <p> S/<?= number_format($igv_total, 2) ?></p>
             </td>
         </tr>
         <tr>
@@ -326,7 +326,7 @@
 
             </td>
             <td class="w-50">
-                <p> S/<?= number_format($negocios[0]['total_negocio_detalle'], 2) ?></p>
+                <p> S/<?= number_format($importe_total, 2) ?></p>
             </td>
         </tr>
     </table>

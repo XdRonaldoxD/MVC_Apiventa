@@ -23,7 +23,7 @@ class NegocioController
     public function GenerarNegocio()
     {
         $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $serie =strtoupper(helpers::generate_string($permitted_chars, 3));
+        $serie = strtoupper(helpers::generate_string($permitted_chars, 3));
         $tipo_documento = $this->request->tipo_documento;
         if ($tipo_documento === 'FACTURA') {
             $folio_documento = Folio::where('id_folio', 9)->first();
@@ -103,6 +103,13 @@ class NegocioController
             array_push($details, $elementos);
         }
 
+        //CALCULOS PARA LA VENTA GLOBAL
+        $total_venta_global=$mtoImpVenta;
+        $mtoBaseIgv_global = round($total_venta_global / (1 + 0.18), 1);
+        $igv_global = $total_venta_global - $mtoBaseIgv_global;
+        $precio_sin_igv_global = $total_venta_global - $igv_global;
+        //------------------------------------------------
+
         //NOTA EL CORRELATIVO ES EL NUMERO DE FOLIO QUE AVANZA
         //PARA BOELTA ES B001-FACTURA ES F001
         $cantidad_digito_folio = strlen($folio_documento->numero_folio);
@@ -135,10 +142,10 @@ class NegocioController
                 ]
             ],
             "mtoOperGravadas" => round($mtoOperGravadas, 1),
-            "mtoIGV" => round($mtoIGV, 1),
-            "valorVenta" => round($valorVenta, 1),
+            "mtoIGV" => round($igv_global, 1),
+            "valorVenta" => round($total_venta_global, 1),
             "totalImpuestos" => round($totalImpuestos, 1),
-            "subTotal" => round($subTotal, 1),
+            "subTotal" => round($precio_sin_igv_global, 1),
             "mtoImpVenta" => round($mtoImpVenta, 1),
             "details" => $details,
             "legends" => [
@@ -230,10 +237,10 @@ class NegocioController
                 'id_folio' => 6,
                 'numero_boleta' => $correlativo,
                 'serie_boleta' => $serie,
-                'valor_boleta' => $subTotal,
+                'valor_boleta' => $precio_sin_igv_global,
                 'fechacreacion_boleta' => date('Y-m-d H:i:s'),
-                'iva_boleta' => $mtoIGV,
-                'total_boleta' => $valorVenta,
+                'iva_boleta' => $igv_global,
+                'total_boleta' => $total_venta_global,
                 'xml_boleta' => $jsonArray['xml'],
                 'cdrzip_boleta' => $jsonArray['sunatResponse']['cdrZip'],
                 'estado_boleta' => 1,
@@ -252,8 +259,9 @@ class NegocioController
                 'numero_factura' => $correlativo,
                 'serie_factura' => $serie,
                 'fechacreacion_factura' => date('Y-m-d H:i:s'),
-                'iva_factura' => $mtoIGV,
-                'total_factura' => $valorVenta,
+                'valorafecto_factura'=>$precio_sin_igv_global,
+                'iva_factura' => $igv_global,
+                'total_factura' => $total_venta_global,
                 'xml_factura' => $jsonArray['xml'],
                 'cdrzip_factura' => $jsonArray['sunatResponse']['cdrZip'],
                 'estado_factura' => 1,
@@ -288,6 +296,7 @@ class NegocioController
         foreach ($producto as $key => $elemento) {
             $cantidad = intval($elemento[6]);
             $precio = intval(str_replace('S/', '', $elemento[7]));
+            $precio_unitario = intval(str_replace('S/', '', $elemento[5]));
             $mtoBaseIgv = round($precio / (1 + 0.18), 1);
             $igv = $precio - $mtoBaseIgv;
 
@@ -321,6 +330,7 @@ class NegocioController
                 'total_negocio_detalle' => $precio,
                 'fechacreacion_negocio_detalle' => date('Y-m-d H:i:s'),
                 'cantidad_negocio_detalle' => $cantidad,
+                'preciounitario_negocio_detalle'=>$precio_unitario
                 // 'preciounitario_negocio_detalle',
             ];
             NegocioDetalle::create($negocio_detalle);
@@ -331,7 +341,7 @@ class NegocioController
             "notificar_stock" => $notificar_stock
         ];
         $pusher->trigger('Stock', 'ActualizarStockEvent', $elementos);
-      
+
         if ($tipo_documento === 'BOLETA') {
             $Boletas = Boleta::where('id_boleta', $id_documento)->first();
             $Boletas->id_negocio = $Negocio->id_negocio;
@@ -343,25 +353,39 @@ class NegocioController
             $Facturas->id_cliente = $id_cliente;
             $Facturas->save();
         }
-  
+
         $pathNotaVenta = $this->EnviarNegocioVenta($Negocio->id_negocio, $tipo_documento);
         echo json_encode($pathNotaVenta, $tipo_documento);
     }
     public function EnviarNegocioVenta($id_negocio, $tipo_documento)
     {
-        if ($tipo_documento==='BOLETA') {
-            $Boleta=Boleta::where('id_negocio',$id_negocio)->first();
-            $serie=$Boleta->serie_boleta;
-            $correlativo=$Boleta->numero_boleta;
-        }else{
-            $Factura=Factura::where('id_negocio',$id_negocio)->first();
-            $serie=$Factura->serie_factura;
-            $correlativo=$Factura->numero_factura;
+        if ($tipo_documento === 'BOLETA') {
+            $Boleta = Boleta::where('id_negocio', $id_negocio)
+            ->join('usuario','usuario.id_usuario','boleta.id_usuario')
+            ->first();
+            $serie = $Boleta->serie_boleta;
+            $correlativo = $Boleta->numero_boleta;
+            $total_afecto = $Boleta->valor_boleta;
+            $igv_total = $Boleta->iva_boleta;
+            $importe_total = $Boleta->total_boleta;
+            $vendedor_documento=$Boleta->apellido_usuario .' '.$Boleta->nombre_usuario;
+        } else {
+            $Factura = Factura::where('id_negocio', $id_negocio)
+            ->join('usuario','usuario.id_usuario','factura.id_usuario')
+            ->first();
+            $serie = $Factura->serie_factura;
+            $correlativo = $Factura->numero_factura;
+            $total_afecto = $Factura->valorafecto_factura;
+            $igv_total = $Factura->iva_factura;
+            $importe_total = $Factura->total_factura;
+            $vendedor_documento=$Factura->apellido_usuario .' '.$Factura->nombre_usuario;
+
         }
         $fecha = date("Y-m-d H:i:s");
         $separaFecha = explode(" ", $fecha);
         $Fecha = explode("-", $separaFecha[0]);
         $filename = "Ticket_" . $Fecha[0] . $Fecha[1] . $Fecha[2] . time() . ".pdf";
+        $filename_documento = "Documento_".$tipo_documento. $Fecha[0] . $Fecha[1] . $Fecha[2] . time() . ".pdf";
         $path = 'archivos/' . $tipo_documento . 'Venta';
         if (!file_exists($path)) {
             mkdir($path, 0777, true);
@@ -370,13 +394,14 @@ class NegocioController
         $imagen = base64_encode(file_get_contents($path_imagen));
         $negocios = Negocio::join('negocio_detalle', 'negocio_detalle.id_negocio', 'negocio.id_negocio')
             ->join('producto', 'producto.id_producto', 'negocio_detalle.id_producto')
-            ->join('cliente','cliente.id_cliente','negocio.id_cliente')
+            ->join('cliente', 'cliente.id_cliente', 'negocio.id_cliente')
             ->where('negocio.id_negocio', $id_negocio)
             ->get();
         $valorventa = $negocios[0]['valor_negocio'];
         $fecha_creacion_venta = $negocios[0]['fechacreacion_negocio'];
         $pagocliente_venta = $negocios[0]['efectivo_negocio'];
         $vuelto_negocio = $negocios[0]['vuelto_negocio'];
+        $fecha_emision_dte=date('Y-m-d',strtotime($negocios[0]['fechacreacion_negocio_detalle']));
         $codigoBarra = base64_encode(file_get_contents((new \chillerlan\QRCode\QRCode())->render($valorventa)));
         $informacion_empresa = [
             "nombre_empresa" => "AHORROFARMA",
@@ -386,14 +411,17 @@ class NegocioController
             "departamento" => 'LIMA',
             "provincia" => 'HUAURA',
             "distrito" => 'SANTA MARIA',
-            'tipo_documento'=>$tipo_documento
+            'tipo_documento' => $tipo_documento
         ];
         $informacion_cliente = [
             "dni_cliente" => $negocios[0]['dni_cliente'],
+            "ruc_cliente" => $negocios[0]['ruc_cliente'],
+            'nombre_cliente_completo'=>$negocios[0]['nombre_cliente'].' '.$negocios[0]['apellidopaterno_cliente'].' '.$negocios[0]['apellidomaterno_cliente']
         ];
         $informacion_documento = [
             'serie' => $serie,
-            'correlativo' => $correlativo
+            'correlativo' => $correlativo,
+            'vendedor_documento'=>$vendedor_documento
         ];
         //CHAPO TODO EL CONTENIDO EN HTML
         ob_start();
@@ -409,6 +437,20 @@ class NegocioController
         $dompdf->render();
         $output = $dompdf->output();
         file_put_contents($path . '/' . $filename, $output);
+
+        //PARA EL PDF------------------------------------------------
+        ob_start();
+        require_once 'generar-pdf/pdf/DocumentoBoletaFactura.php';
+        $html2 = ob_get_clean();
+        $dompdf2 = new Dompdf();
+        $dompdf2->loadHtml($html2);
+        // (Optional) Setup the paper size and orientation
+        $dompdf2->setPaper('A4');
+        //GUARDAMOS EL DPF
+        $dompdf2->render();
+        $output2 = $dompdf2->output();
+        file_put_contents($path . '/' . $filename_documento, $output2);
+        // --------------------------------
 
         return $filename;
     }

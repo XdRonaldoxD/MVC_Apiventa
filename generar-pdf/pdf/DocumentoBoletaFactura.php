@@ -6,7 +6,7 @@ use App\Helpers\Helper;
 
 <head>
     <title><?php
-            echo substr($nombre_archivo, 0, -4)
+            echo $informacion_empresa['tipo_documento']
             ?></title>
 
     <style>
@@ -105,12 +105,12 @@ use App\Helpers\Helper;
         }
 
         .header-table {
-            background: #EDEDED;
+            backgnumber_format: #EDEDED;
             /* color:#fff; */
         }
 
         .header-table-black {
-            background: #000;
+            backgnumber_format: #000;
             color: #fff;
         }
 
@@ -164,15 +164,15 @@ use App\Helpers\Helper;
                 <table class=" percent-100">
                     <tr>
                         <td class="percent-20 ">
-                            <img style="width:{{$ancho}};height:{{$alto}}" src="data:image/png;base64,{{$imagen}}" alt="" />
+                            <img style="width:180px; height:auto;" src="data:image/png;base64,<?= $imagen ?>" alt="" />
                         </td>
                         <td class="percent-80  ">
                             <ul class="list-no-style padding-left-5">
-                                <li class="text-primary" style="font-family: sans-serif;" ><b>{{$informacion['emisor']['nombre']}}</b></li>
+                                <li class="text-primary" style="font-family: sans-serif;"><b><?= $informacion_empresa['nombre_empresa'] ?></b></li>
                                 <!-- <li class="font-size-12" style="font-family: sans-serif;" style="font-family: sans-serif;">Sucursal: {{$informacion['emisor']['sucursal']}}</li> -->
-                                <li class="font-size-12" style="font-family: sans-serif;" >{{$informacion['emisor']['giro']}}</li>
-                                <li class="font-size-12" style="font-family: sans-serif;" >{{$informacion['emisor']['direccion']}}</li>
-                                <li class="font-size-12" style="font-family: sans-serif;" >{{$informacion['emisor']['comuna']}}</li>
+                                <li class="font-size-12" style="font-family: sans-serif;"><?= $informacion_empresa['razonSocial'] ?></li>
+                                <li class="font-size-12" style="font-family: sans-serif;"><?= $informacion_empresa['direccion'] ?></li>
+                                <li class="font-size-12" style="font-family: sans-serif;"><?= $informacion_empresa['departamento'] ?>-<?= $informacion_empresa['provincia'] ?>-<?= $informacion_empresa['distrito'] ?></li>
                             </ul>
                         </td>
                     </tr>
@@ -180,15 +180,14 @@ use App\Helpers\Helper;
             </td>
             <td style="text-align:center; font-size:25px;" class="percent-40  ">
                 <div class="border-red">
-                    <span class="text-danger font-size-16" style="font-family: sans-serif;"><b>R.U.C.: {{$informacion['emisor']['rut']}}</b></span>
+                    <span class="text-danger font-size-16" style="font-family: sans-serif;"><b>R.U.C.: <?= $informacion_empresa['ruc'] ?></b></span>
                     <br>
-                    <span class="text-danger font-size-16" style="font-family: sans-serif;"><b>{{$informacion['info_dte']['glosa_dte']}}</b></span>
+                    <span class="text-danger font-size-16" style="font-family: sans-serif;"><b><?= $informacion_empresa['tipo_documento'] ?> ELECTRONICA</b></span>
                     <br>
-                    <span class="text-danger font-size-16" style="font-family: sans-serif;"><b>N° {{$informacion['info_dte']['numero_doc_dte']}} </b></span>
+                    <span class="text-danger font-size-16" style="font-family: sans-serif;"><b>N° <?= $correlativo ?></b></span>
                     <br>
                 </div>
-                <span class="text-danger font-size-16" style="font-family: sans-serif;"><b>S.I.I. - SANTIAGO</b></span>
-            </td>R.U.C
+            </td>
         </tr>
     </table>
 
@@ -196,43 +195,43 @@ use App\Helpers\Helper;
         <tr>
             <td class="percent-100 align-right">
                 <p style="font-size: 12px;padding: 0px;margin: 0px;font-family: sans-serif;">Fecha Emisión: <?php
-                                                                                    $fechas = explode("-", $informacion['info_dte']['fecha_emision_dte']);
-                                                                                    echo   $fechas[2] . " de " . helpers::nombreMes($informacion['info_dte']['fecha_emision_dte']) . " del " .  $fechas[0] ?></p>
+                                                                                                            $fechas = explode("-", $fecha_emision_dte);
+                                                                                                            echo  $fechas[2]." de " . helpers::nombreMes($fecha_emision_dte) . " del " .  $fechas[0] ?></p>
             </td>
         </tr>
         <tr>
             <td class="percent-100 border">
                 <table class=" percent-100">
                     <tr>
-                        <td class="percent-50 font-size-12" style="font-family: sans-serif;"> <b>SEÑOR(ES):</b> {{$informacion['cliente']['nombre']}}</td>
-                        <td class="percent-50 font-size-12 " style="font-family: sans-serif;"> <b>CONTACTO:</b> {{$informacion['cliente']['contacto']}} </td>
+                        <td class="percent-50 font-size-12" style="font-family: sans-serif;"> <b>SEÑOR(ES):</b> <?= $informacion_cliente['nombre_cliente_completo'] ?></td>
+                        <td class="percent-50 font-size-12 " style="font-family: sans-serif;"> <b>VENDEDOR:</b> <?= $informacion_documento['vendedor_documento'] ?> </td>
                     </tr>
                     <tr>
-                        <td class="percent-50 font-size-12" style="font-family: sans-serif;" > <b>R.U.C.:</b>{{$informacion['cliente']['rut']}}</td>
-                        <td class="percent-50 font-size-12" style="font-family: sans-serif;" ><b>EMAIL:</b> {{$informacion['cliente']['email']}} </td>
+                        <td class="percent-50 font-size-12" style="font-family: sans-serif;"> <b>
+                                <?= ($informacion_empresa['tipo_documento'] == 'BOLETA') ? 'DNI:'  : 'R.U.C.:' ?>
+                            </b><?= ($informacion_empresa['tipo_documento'] == 'BOLETA') ? $informacion_cliente['dni_cliente']  : $informacion_cliente['ruc_cliente'] ?></td>
+                        <td class="percent-50 font-size-12" style="font-family: sans-serif;"><b>EMAIL:</b> </td>
                     </tr>
                     <tr>
-                        <td class="percent-50 font-size-12" style="font-family: sans-serif;" > <b>GIRO:</b>{{$informacion['cliente']['giro']}}</td>
-                        <td class="percent-50 font-size-12" style="font-family: sans-serif;" ><b>TELÉFONO:</b>{{$informacion['cliente']['telefono']}}</td>
+                        <td class="percent-50 font-size-12" style="font-family: sans-serif;"> <b>GIRO:</b></td>
+                        <td class="percent-50 font-size-12" style="font-family: sans-serif;"><b>TELÉFONO:</b></td>
                     </tr>
                     <tr>
-                        <td class="percent-50 font-size-12" style="font-family: sans-serif;" ><b> DIRECCIÓN:</b>{{$informacion['cliente']['direccion']}}</td>
+                        <td class="percent-50 font-size-12" style="font-family: sans-serif;"><b> DIRECCIÓN:</b></td>
                     </tr>
                     <tr>
-                        <td class="percent-50 font-size-12"  style="font-family: sans-serif;"><b>COMUNA:</b>{{$informacion['cliente']['comuna']}}</td>
+                        <td class="percent-50 font-size-12" style="font-family: sans-serif;"><b>COMUNA:</b></td>
                     </tr>
                     <tr>
-                        <td class="percent-50 font-size-12" style="font-family: sans-serif;"><b>REGIÓN:</b>{{$informacion['cliente']['region']}}</td>
+                        <td class="percent-50 font-size-12" style="font-family: sans-serif;"><b>REGIÓN:</b></td>
                     </tr>
                 </table>
             </td>
         </tr>
         </tr>
     </table>
-
-
     <br>
-    <span class="font-size-12" ><b style="font-family: sans-serif;">Referencias:</b></span>
+    <span class="font-size-12"><b style="font-family: sans-serif;">Referencias:</b></span>
     <table class="percent-100 miTabla">
         <thead class="header-table">
             <tr>
@@ -260,79 +259,69 @@ use App\Helpers\Helper;
             </tr>
         </thead>
         <tbody class="percent-100">
-
-            @foreach($informacion['detalle_venta'] as $key=>$elemento)
-            <?php 
-                    $borde = "border-top:1px solid white; ";   
-                if($key == 0){
+            <?php foreach ($negocios as $key => $elemento) {
+                $borde = "border-top:1px solid white; ";
+                if ($key == 0) {
                     $borde = "";
                 }
             ?>
-            <tr class="percent-100" style="padding: 0px;margin: 0px">
-                <td class="percent-5 center font-size-12" style="padding: 0px;margin: 0px; {{$borde}}">
-                    <p style="font-size: 12px;padding: 0px;margin: 0px;"></p>
-                </td>
-                <td class="percent-30 center font-size-12" style="padding: 0px;margin: 0px; {{$borde}}">
-                    <p style="font-size: 12px;padding: 0px;margin: 0px;font-family: sans-serif;">{{$elemento['detalle']}}</p>
-                </td>
-                <td class="percent-10 center font-size-12" style="padding: 0px;margin: 0px; {{$borde}}">
-                    <p>{{$elemento['cantidad']}}</p>
-                </td>
-                <td class="percent-10 center font-size-12" style="padding: 0px;margin: 0px; {{$borde}}">
-                    <p style="font-size: 12px;padding: 0px;margin: 0px;font-family: sans-serif;">{{$elemento['unidad']}}</p>
-                </td>
-                <td class="percent-10 center font-size-12" style="padding: 0px;margin: 0px; {{$borde}}">
-                    <p style="font-size: 12px;padding: 0px;margin: 0px;font-family: sans-serif;">${{$elemento['precio_unitario']}}</p>
-                </td>
-                <td class="percent-10 center font-size-12" style="padding: 0px;margin: 0px; {{$borde}}">
-                    <p style="font-size: 12px;padding: 0px;margin: 0px;font-family: sans-serif;">{{$elemento['descuento']}} %</p>
-                </td>
-                <td class="percent-10 center font-size-12" style="padding: 0px;margin: 0px; {{$borde}}">
-                    <p style="font-size: 12px;padding: 0px;margin: 0px;font-family: sans-serif;">${{$elemento['total']}}</p>
-                </td>
-            </tr>
-            @if($key == count($informacion['detalle_venta']) - 1 )
+                <tr class="percent-100" style="padding: 0px;margin: 0px">
+                    <td class="percent-5 center font-size-12" style="padding: 0px;margin: 0px; <?= $borde ?>">
+                        <p style="font-size: 12px;padding: 0px;margin: 0px;"><?= $elemento['codigo_producto'] ?></p>
+                    </td>
+                    <td class="percent-30 center font-size-12" style="padding: 0px;margin: 0px; <?= $borde ?>">
+                        <p style="font-size: 12px;padding: 0px;margin: 0px;font-family: sans-serif;"><?= $elemento['glosa_producto'] ?></p>
+                    </td>
+                    <td class="percent-10 center font-size-12" style="padding: 0px;margin: 0px; <?= $borde ?>">
+                        <p><?= $elemento['cantidad_negocio_detalle'] ?></p>
+                    </td>
+                    <td class="percent-10 center font-size-12" style="padding: 0px;margin: 0px; <?= $borde ?>">
+                        <p style="font-size: 12px;padding: 0px;margin: 0px;font-family: sans-serif;"></p>
+                    </td>
+                    <td class="percent-10 center font-size-12" style="padding: 0px;margin: 0px; <?= $borde ?>">
+                        <p style="font-size: 12px;padding: 0px;margin: 0px;font-family: sans-serif;">S/<?= number_format($elemento['preciounitario_negocio_detalle'],2) ?></p>
+                    </td>
+                    <td class="percent-10 center font-size-12" style="padding: 0px;margin: 0px; <?= $borde ?>">
+                        <p style="font-size: 12px;padding: 0px;margin: 0px;font-family: sans-serif;"><?= $elemento['descuentogeneral_negocio_detalle'] ?> %</p>
+                    </td>
+                    <td class="percent-10 center font-size-12" style="padding: 0px;margin: 0px; <?= $borde ?>">
+                        <p style="font-size: 12px;padding: 0px;margin: 0px;font-family: sans-serif;">S/<?= number_format($elemento['total_negocio_detalle'],2) ?></p>
+                    </td>
+                </tr>
+                <?php if ($key == count($negocios) - 1) {
+                    if (count($negocios) < 10) {
+                        for ($i = 0; $i < 10 - count($negocios); $i++) {
+                            $borde = "border-top:1px solid white; "; ?>
+                            <tr class="percent-100">
+                                <td class="percent-5 center font-size-12" style="<?= $borde ?>">
+                                    <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
+                                </td>
+                                <td class="percent-30 center font-size-12" style="<?= $borde ?>">
+                                    <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
+                                </td>
+                                <td class="percent-10 center font-size-12" style="<?= $borde ?>">
+                                    <p class="no-visibility">.</p>
+                                </td>
+                                <td class="percent-10 center font-size-12" style="<?= $borde ?>">
+                                    <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
+                                </td>
+                                <td class="percent-10 center font-size-12" style="<?= $borde ?>">
+                                    <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
+                                </td>
+                                <td class="percent-10 center font-size-12" style="<?= $borde ?>">
+                                    <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
+                                </td>
+                                <td class="percent-10 center font-size-12" style="<?= $borde ?>">
+                                    <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
+                                </td>
+                            </tr>
             <?php
-            if (count($informacion['detalle_venta']) < 10) {
-                for ($i = 0; $i < 10 - count($informacion['detalle_venta']); $i++) {
-                    $borde = "border-top:1px solid white; ";                 
-            ?>
-                    <tr class="percent-100">
-                        <td class="percent-5 center font-size-12" style="{{$borde}}">
-                            <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
-                        </td>
-                        <td class="percent-30 center font-size-12" style="{{$borde}}">
-                            <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
-                        </td>
-                        <td class="percent-10 center font-size-12" style="{{$borde}}">
-                            <p class="no-visibility">.</p>
-                        </td>
-                        <td class="percent-10 center font-size-12" style="{{$borde}}">
-                            <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
-                        </td>
-                        <td class="percent-10 center font-size-12" style="{{$borde}}">
-                            <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
-                        </td>
-                        <td class="percent-10 center font-size-12" style="{{$borde}}">
-                            <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
-                        </td>
-                        <td class="percent-10 center font-size-12" style="{{$borde}}">
-                            <p class="no-visibility" style="font-size: 12px;padding: 0px;margin: 0px;">.</p>
-                        </td>
-                    </tr>
-            <?php
+                        }
+                    }
                 }
             }
             ?>
-            @endif
-            @endforeach
-
-
         </tbody>
-
-
-
-
     </table>
     <table class=" percent-100">
         <tr>
@@ -343,33 +332,21 @@ use App\Helpers\Helper;
             <td class="percent-50">
                 <table class="miTabla percent-100">
                     <tr>
-                        <td class="font-size-12"  style="font-family: sans-serif;">SUBTOTAL</td>
+                        <td class="font-size-12" style="font-family: sans-serif;">MONTO NETO</td>
                         <td>
-                            <p style="text-align:right;padding: 0px;margin: 0px;font-size: 12px;font-family: sans-serif"> {{$informacion['totales_venta']['sub_total']}} </p>
+                            <p style="text-align:right;padding: 0px;margin: 0px;font-size: 12px;font-family: sans-serif">S/<?=number_format($total_afecto,2)?> </p>
                         </td>
                     </tr>
                     <tr>
-                        <td class="font-size-12"  style="font-family: sans-serif;">DESCUENTO</td>
+                        <td class="font-size-12" style="font-family: sans-serif;">IGV 19%</td>
                         <td>
-                            <p style="text-align:right;padding: 0px;margin: 0px;font-size: 12px;font-family: sans-serif">{{$informacion['totales_venta']['descuento']}} </p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="font-size-12"  style="font-family: sans-serif;">MONTO NETO</td>
-                        <td>
-                            <p style="text-align:right;padding: 0px;margin: 0px;font-size: 12px;font-family: sans-serif">{{$informacion['totales_venta']['monto_neto']}} </p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="font-size-12"  style="font-family: sans-serif;">IVA {{Session::get('iva')}}%</td>
-                        <td>
-                            <p style="text-align:right;padding: 0px;margin: 0px;font-size: 12px;font-family: sans-serif">{{$informacion['totales_venta']['iva']}} </p>
+                            <p style="text-align:right;padding: 0px;margin: 0px;font-size: 12px;font-family: sans-serif">S/<?=number_format($igv_total,2)?> </p>
                         </td>
                     </tr>
                     <tr>
                         <td class="font-size-12" style="font-family: sans-serif;">TOTAL</td>
                         <td>
-                            <p style="text-align:right;padding: 0px;margin: 0px;font-size: 12px;font-family: sans-serif">{{$informacion['totales_venta']['total']}} </p>
+                            <p style="text-align:right;padding: 0px;margin: 0px;font-size: 12px;font-family: sans-serif">S/<?= number_format($importe_total,2)?> </p>
                         </td>
                     </tr>
                 </table>
@@ -389,9 +366,7 @@ use App\Helpers\Helper;
     <table class="percent-100">
         <tr class="percent-100">
             <td class="percent-40">
-                <img style="width:100%;height:90px;" src="data:image/png;base64,{{$codigoBarra}}" alt="" />
-                <div style="font-size: 8px;text-align: center;font-family: sans-serif">Timbre Electrónico SII</div>
-                <div style="font-size: 8px;text-align: center;font-family: sans-serif">Documentado generado por www.obuma.cl</div>
+                <img style="width:50%;height:100px;" src="data:image/png;base64,<?=$codigoBarra?>" alt="" />
             </td>
             <td class="percent-50">
 
