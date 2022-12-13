@@ -405,7 +405,7 @@ class Producto
             }
         }
         $consulta = rtrim($consulta, "and");
-        $consulta.=" order by producto.id_producto desc";
+        $consulta .= " order by producto.id_producto desc";
         $productos = $this->db->prepare($consulta);
         $productos->execute();
         $result = $productos->fetchAll(PDO::FETCH_ASSOC);
@@ -550,9 +550,21 @@ class Producto
     }
     public function CrearHistorialProducto($datos)
     {
+        switch ($_POST['tipo_movimiento']) {
+            case 'Añadir':
+                $id_tipo_movimiento = 1;
+                break;
+            case 'Quitar':
+                $id_tipo_movimiento = 2;
+                break;
+
+            default:
+                $id_tipo_movimiento = 3;
+                break;
+        }
         $sql = "INSERT INTO producto_historial
         (id_usuario,
-        tipo_movimiento,
+        id_tipo_movimiento,
         id_producto,
         cantidadmovimiento_producto_historial,
         fecha_producto_historial,
@@ -560,23 +572,24 @@ class Producto
         values(?,?,?,?,?,?)";
         $sentencia = $this->db->prepare($sql);
         $sentencia->execute(array(
-            $datos['id_usuario'], $datos['tipo_movimiento'], $datos['id_producto'], $datos['cantidadmovimiento_producto_historial'],
+            $datos['id_usuario'], $id_tipo_movimiento, $datos['id_producto'], $datos['cantidadmovimiento_producto_historial'],
             $datos['fecha_producto_historial'], $datos['comentario_producto_historial']
         ));
         $sentencia = null;
         return  $this->db->lastInsertId();
     }
 
-    public function ActualizarStockProducto($datos,$id_producto) {
-     
-        $datos_array=array($datos['stock_producto'],$datos['fechacreacion_producto'],$id_producto);
+    public function ActualizarStockProducto($datos, $id_producto)
+    {
+
+        $datos_array = array($datos['stock_producto'], $datos['fechacreacion_producto'], $id_producto);
         if (isset($datos['preciocosto_producto'])) {
-           $sql_dato="preciocosto_producto=?,";
-           array_unshift($datos_array,$datos['preciocosto_producto']);
-        }else{
-            $sql_dato="";
+            $sql_dato = "preciocosto_producto=?,";
+            array_unshift($datos_array, $datos['preciocosto_producto']);
+        } else {
+            $sql_dato = "";
         }
-        $sql = "UPDATE  producto  SET  $sql_dato stock_producto=?, fechacreacion_producto=?   where  id_producto=?" ;
+        $sql = "UPDATE  producto  SET  $sql_dato stock_producto=?, fechacreacion_producto=?   where  id_producto=?";
         $sentencia = $this->db->prepare($sql);
         try {
             $sentencia->execute($datos_array);

@@ -217,7 +217,7 @@ class ProductoController
         $fechacreacion = date('Y-m-d');
         $spread = new Spreadsheet();
         $sheet = $spread->getActiveSheet();
-        $gdImage = imagecreatefrompng('http://localhost/MVC_APIVENTA/archivos/imagenes/ahorro_farma.png');
+        $gdImage = imagecreatefrompng(RUTA_ARCHIVO."/archivos/imagenes/ahorro_farma.png");
         // $textColor = imagecolorallocate($gdImage, 255, 255, 5);
         // imagestring($gdImage, 1, 7, 5, date("F Y"), $textColor);
 
@@ -337,10 +337,10 @@ class ProductoController
             $validation->setShowInputMessage(true);
             $validation->setPromptTitle('Nota');
             $validation->setPrompt('Debe seleccionar uno de las opciones desplegables.');
-            $validation->setShowErrorMessage(true);
+            $validation->setShowErrorMessage(false);
             $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP);
-            $validation->setErrorTitle('Opción Invalida.');
-            $validation->setError('Seleccione uno de la lista desplegable.');
+            // $validation->setErrorTitle('Opción Invalida.');
+            // $validation->setError('Seleccione uno de la lista desplegable.');
 
             //ASIGANMOS A CADA CELDA EL SELECT multiple
             $validation = $sheet->getCell('B' . ($key + 3))->getDataValidation();
@@ -351,10 +351,10 @@ class ProductoController
             $validation->setShowInputMessage(true);
             $validation->setPromptTitle('Nota');
             $validation->setPrompt('Debe seleccionar uno de las opciones desplegables.');
-            $validation->setShowErrorMessage(true);
+            $validation->setShowErrorMessage(false);
             $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP);
-            $validation->setErrorTitle('Opción Invalida.');
-            $validation->setError('Seleccione uno de la lista desplegable.');
+            // $validation->setErrorTitle('Opción Invalida.');
+            // $validation->setError('Seleccione uno de la lista desplegable.');
 
             $validation = $sheet->getCell('D' . ($key + 3))->getDataValidation();
             $validation->setType(DataValidation::TYPE_LIST);
@@ -364,10 +364,10 @@ class ProductoController
             $validation->setShowInputMessage(true);
             $validation->setPromptTitle('Nota');
             $validation->setPrompt('Debe seleccionar uno de las opciones desplegables.');
-            $validation->setShowErrorMessage(true);
+            $validation->setShowErrorMessage(false);
             $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP);
-            $validation->setErrorTitle('Opción Invalida.');
-            $validation->setError('Seleccione uno de la lista desplegable.');
+            // $validation->setErrorTitle('Opción Invalida.');
+            // $validation->setError('Seleccione uno de la lista desplegable.');
 
             $validation = $sheet->getCell('E' . ($key + 3))->getDataValidation();
             $validation->setType(DataValidation::TYPE_LIST);
@@ -377,10 +377,10 @@ class ProductoController
             $validation->setShowInputMessage(true);
             $validation->setPromptTitle('Nota');
             $validation->setPrompt('Debe seleccionar uno de las opciones desplegables.');
-            $validation->setShowErrorMessage(true);
+            $validation->setShowErrorMessage(false);
             $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP);
-            $validation->setErrorTitle('Opción Invalida.');
-            $validation->setError('Seleccione uno de la lista desplegable.');
+            // $validation->setErrorTitle('Opción Invalida.');
+            // $validation->setError('Seleccione uno de la lista desplegable.');
         }
         $sheet->setTitle("Productos Almacenado");
         //FINALIZAR LA PRIMERA HOJA DEL EXCEL
@@ -427,9 +427,6 @@ class ProductoController
         $ruta = $path . "/" . $nombre_excel;
         $documento = IOFactory::load($ruta);
         // print_r($cantidad);
-
-
-
         $MascotaExiste = array();
         $respuesta = "";
         $ProductoNoRegistrado = array();
@@ -456,6 +453,7 @@ class ProductoController
                             $tipo_producto =  $elemento[0];
                         }
                     }
+
                     $unidad = null;
                     if (isset($elemento[1])) {
                         if (!empty($elemento[1])) {
@@ -527,8 +525,7 @@ class ProductoController
         } catch (\Throwable $e) {
             $respuesta = $e->getMessage();
         }
-        // var_dump($validarExcel);
-        // die;
+
         if ($validarExcel !== true) {
             try {
                 foreach ($hojaActual->getRowIterator() as $key => $fila) {
@@ -642,7 +639,7 @@ class ProductoController
                         $tablaunidad = new Unidad();
                         $tablaunidad->setGlosa_unidad($unidad_insertar);
                         $unidad = $tablaunidad->Traer_Unidad('glosa_unidad');
-                        if (isset($unidad)) {
+                        if (!empty($unidad)) {
                             $id_unidad = $unidad['id_unidad'];
                         } else {
                             // $tablaunidadnueva = new Unidad();
@@ -701,10 +698,10 @@ class ProductoController
                             $Proveedor->setVigente_proveedor(1);
                             $id_proveedor = $Proveedor->Registrar();
                         }
-                        $productos =new producto();
+                        $productos = new producto();
                         $productos->setGlosa_producto($nombre_producto_insertar);
                         $productos->setCodigo_producto($codigo_producto_insertar);
-                        $Traendo_productos=$productos->ConsultaMigrarProducto();
+                        $Traendo_productos = $productos->ConsultaMigrarProducto();
                         if (isset($Traendo_productos)) {
                             $productos->setId_tipo_producto($id_tipo_producto);
                             $productos->setId_tipo_concentracion($id_tipo_concentracion);
@@ -763,19 +760,31 @@ class ProductoController
         echo  json_encode($retornando);
     }
 
-    public function TraerHistorialProducto(){
+    public function TraerHistorialProducto()
+    {
         $DatosHistorial = (new Producto)->ProductoHistorial($_POST['id_producto']);
         echo json_encode($DatosHistorial);
-    
     }
 
     public function GuardarHistorial()
     {
+        switch ($_POST['tipo_movimiento']) {
+            case 'Añadir':
+                $id_tipo_movimiento = 1;
+                break;
+            case 'Quitar':
+                $id_tipo_movimiento = 2;
+                break;
+
+            default:
+                $id_tipo_movimiento = 3;
+                break;
+        }
         $datos = array(
             'id_usuario' => $_POST['id_usuario'],
-            'tipo_movimiento' => $_POST['tipo_movimiento'],
+            'id_tipo_movimiento' => $id_tipo_movimiento,
             'id_producto' => $_POST['id_producto'],
-            'cantidadmovimiento_producto_historial' =>$_POST['movimiento_historial'],
+            'cantidadmovimiento_producto_historial' => $_POST['movimiento_historial'],
             'fecha_producto_historial' => date('Y-m-d H:i:s'),
             'comentario_producto_historial' => ($_POST['comentario_producto_historial'] == 'undefined') ? '' :  $_POST['comentario_producto_historial'],
         );
@@ -789,7 +798,7 @@ class ProductoController
                 "preciocosto_producto" => $_POST['preciocosto_producto']
             );
         }
-         (new Producto)->ActualizarStockProducto($datoProducto, $_POST['id_producto']);
+        (new Producto)->ActualizarStockProducto($datoProducto, $_POST['id_producto']);
         if ($historial) {
             $respuesta = "creado";
         } else {
@@ -797,7 +806,4 @@ class ProductoController
         }
         echo json_encode($respuesta);
     }
-
-
-
 }

@@ -4,8 +4,7 @@ require_once "models/Notaventa.php";
 require_once "models/NotaventaDetalle.php";
 require_once "models/Producto.php";
 require_once "Helpers/JwtAuth.php";
-require_once "EloquentsModel/Boleta.php";
-require_once "EloquentsModel/Factura.php";
+
 
 
 use Dompdf\Dompdf;
@@ -21,7 +20,6 @@ class NotaVentaController
     }
     public function ListarProductoVenta()
     {
-
         $NotaVenta = new Notaventa();
         $respuesta = $NotaVenta->ListarProductoVenta($this->request->id_producto);
         echo json_encode($respuesta);
@@ -140,7 +138,7 @@ class NotaVentaController
     public function VisualizarNotaVentaTicket()
     {
         $pathticket = $this->request->pathticket;
-        $pathtoFile = "http://localhost/MVC_APIVENTA/archivos/TicketVenta/$pathticket";
+        $pathtoFile = RUTA_ARCHIVO."/archivos/TicketVenta/$pathticket";
         echo json_encode($pathtoFile);
     }
 }

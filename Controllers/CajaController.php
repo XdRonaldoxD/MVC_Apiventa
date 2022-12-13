@@ -6,7 +6,8 @@ require_once "EloquentsModel/Caja.php";
 require_once "EloquentsModel/aperturacaja.php";
 require_once "EloquentsModel/notaventadetalle.php";
 require_once "EloquentsModel/notaventa.php";
-
+require_once "EloquentsModel/Negocio.php";
+require_once "EloquentsModel/ConsultaGlobal.php";
 class CajaController
 {
     public function ListarCaja()
@@ -74,24 +75,46 @@ class CajaController
 
     public function ListarNotaVenta()
     {
-        $NotaVentaDetalle = notaventa::query();
-        $NotaVentaDetalle = $NotaVentaDetalle->join('usuario', 'usuario.id_usuario', '=', 'nota_venta.id_usuario');
-        if (!empty($_POST['fechaInicio']) && !empty($_POST['fechafin'])) {
-            $NotaVentaDetalle = $NotaVentaDetalle->whereRaw("(nota_venta.fecha_creacion_venta >= ? AND nota_venta.fecha_creacion_venta <= ?)", [$_POST['fechaInicio'] . " 00:00:00", $_POST['fechafin'] . " 23:59:59"]);
-        }
-        $NotaVentaDetalle = $NotaVentaDetalle->select("nota_venta.id_nota_venta", "nota_venta.numero_venta", "nota_venta.fecha_creacion_venta", "nota_venta.hora_creacion_venta", 'usuario.nombre_usuario', 'usuario.apellido_usuario');
-        $NotaVentaDetalle = $NotaVentaDetalle->orderBy('nota_venta.id_nota_venta', "desc");
-        $NotaVentaDetalle = $NotaVentaDetalle->get()->toArray();
-
+        $consulta="SELECT id_nota_venta,null as id_factura,null as id_boleta,numero_venta,null as numero_boleta,null as numero_factura,fecha_creacion_venta,nombre_usuario,apellido_usuario
+        from nota_venta 
+        INNER JOIN usuario USING (id_usuario)
+        where fecha_creacion_venta BETWEEN '{$_POST['fechaInicio']} 00:00:00' and '{$_POST['fechafin']}  23:59:59'
+        UNION all
+        select null as id_nota_venta, factura.id_factura, boleta.id_boleta, null as numero_venta, boleta.numero_boleta, factura.numero_factura, negocio.fechacreacion_negocio as fecha_creacion_venta, usuario.nombre_usuario, usuario.apellido_usuario
+        FROM negocio
+        INNER JOIN usuario USING (id_usuario)
+        LEFT JOIN boleta USING (id_negocio)
+        LEFT JOIN factura USING (id_negocio)
+        where fechacreacion_negocio BETWEEN '{$_POST['fechaInicio']} 00:00:00' and '{$_POST['fechafin']}  23:59:59'
+        ORDER BY fecha_creacion_venta DESC";
+        $NegociosVentaDetalle = (new ConsultaGlobal())->ConsultaGlobal($consulta);
         $ventadetalle = array();
-        foreach ($NotaVentaDetalle as $elemento) {
+        foreach ($NegociosVentaDetalle as $elemento) {
+            $documento = '';
+            $tipo_documento = '';
+            $id_tipo_documento = null;
+            if ($elemento->id_nota_venta) {
+                $documento = 'Nota De Venta N°' . $elemento->numero_venta;
+                $tipo_documento = 'NOTA VENTA';
+                $id_tipo_documento = $elemento->id_nota_venta;
+            } else if ($elemento->id_boleta) {
+                $documento = 'Boleta Electronica N°' . $elemento->numero_boleta;
+                $tipo_documento = 'BOLETA';
+                $id_tipo_documento = $elemento->id_boleta;
+            } else if ($elemento->id_factura) {
+                $documento = 'Factura Electroncia N°' . $elemento->numero_factura;
+                $tipo_documento = 'FACTURA';
+                $id_tipo_documento = $elemento->id_factura;
+            }
             $datos = array(
-                "id_nota_venta" => $elemento['id_nota_venta'],
-                "numero_venta" => $elemento['numero_venta'],
-                "nombre_usuario" => $elemento['nombre_usuario'],
-                "apellido_usuario" => $elemento['apellido_usuario'],
-                "fecha_creacion_venta" => date("d/m/Y", strtotime($elemento['fecha_creacion_venta'])),
-                "hora_creacion_venta" => date('g:i A', strtotime($elemento['hora_creacion_venta']))
+                "documento" => $documento,
+                "tipo_documento" => $tipo_documento,
+                "id_tipo_documento" => $id_tipo_documento,
+                "numero_venta" => $elemento->numero_venta,
+                "nombre_usuario" => $elemento->nombre_usuario,
+                "apellido_usuario" => $elemento->apellido_usuario,
+                "fecha_creacion_venta" => date("d/m/Y", strtotime($elemento->fecha_creacion_venta)),
+                "hora_creacion_venta" => date('g:i A', strtotime($elemento->fecha_creacion_venta))
             );
             array_push($ventadetalle, $datos);
         }
@@ -101,7 +124,10 @@ class CajaController
     public function TraerNotaVenta()
     {
         $notaventa = notaventa::where("id_nota_venta", $_POST['id_nota_venta'])->first();
-        echo $notaventa;
+        $pathticket = $notaventa->path_nota_venta;
+        $pathtoFile = RUTA_ARCHIVO."/archivos/TicketVenta/$pathticket";
+        echo json_encode($pathtoFile);
+    
     }
 
     public function GraficaFechaNotaVenta()
@@ -230,31 +256,61 @@ class CajaController
     public function LogicaNotaVenta($request)
     {
         // var_dump($request);die;
-
+        $agrupar_datos = [];
         if (isset($request['FechaFin'])) {
             $fechaInicio = $request['fechaInicio'];
             $fechaFin = $request['FechaFin'];
-            $nota_venta_detalle = notaventadetalle::join("producto", "producto.id_producto", "=", "nota_venta_detalle.id_producto")
-                ->join("tipo_inventario", "tipo_inventario.id_tipo_inventario", "=", "producto.id_tipo_inventario")
-                ->select('producto.id_producto', 'producto.codigo_producto', 'tipo_inventario.glosa_tipo_inventario', 'producto.glosa_producto', 'producto.id_tipo_inventario', 'nota_venta_detalle.valor_venta', 'nota_venta_detalle.cantidad_venta_detalle');
-            if (!empty($request['fechaInicio'])) {
-                $nota_venta_detalle = $nota_venta_detalle->whereRaw("(nota_venta_detalle.fechacreacion_venta_detalle >= ? AND nota_venta_detalle.fechacreacion_venta_detalle <= ?)", [$fechaInicio . ' 00:00:00', $fechaFin . ' 23:59:59']);
-            } else {
-                $nota_venta_detalle = $nota_venta_detalle->Where('nota_venta_detalle.fechacreacion_venta_detalle', "<=", $fechaFin);
-            }
-            $nota_venta_detalle = $nota_venta_detalle->get()->toArray();
+            $consulta_globa = "SELECT nota_venta_detalle.valor_venta,nota_venta_detalle.cantidad_venta_detalle,
+            producto.id_producto,codigo_producto,glosa_tipo_inventario,glosa_producto,
+            producto.id_tipo_inventario
+            from apertura_caja  INNER JOIN nota_venta USING (id_apertura_caja)
+            INNER JOIN nota_venta_detalle USING (id_nota_venta)
+            INNER JOIN producto USING (id_producto)
+            inner join tipo_inventario USING (id_tipo_inventario)
+            WHERE nota_venta_detalle.fechacreacion_venta_detalle BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59'
+            UNION ALL
+            select negocio_detalle.total_negocio_detalle as valor_venta,negocio_detalle.cantidad_negocio_detalle as cantidad_venta_detalle,producto.id_producto,codigo_producto,glosa_tipo_inventario,glosa_producto,
+            producto.id_tipo_inventario FROM apertura_caja INNER JOIN negocio USING (id_apertura_caja)
+            INNER JOIN negocio_detalle USING (id_negocio)
+            INNER JOIN producto USING (id_producto)
+            inner join tipo_inventario USING (id_tipo_inventario)
+            WHERE negocio_detalle.fechacreacion_negocio_detalle BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59' ";
+            $nota_venta_detalle = (new ConsultaGlobal())->ConsultaGlobal($consulta_globa);
         } else {
-            $nota_venta_detalle = notaventa::select("nota_venta.id_apertura_caja", 'nota_venta_detalle.*', 'producto.*', 'tipo_inventario.*')
-                ->join('nota_venta_detalle', 'nota_venta_detalle.id_nota_venta', '=', 'nota_venta.id_nota_venta')
-                ->join("producto", "producto.id_producto", "=", "nota_venta_detalle.id_producto")
-                ->join("tipo_inventario", "tipo_inventario.id_tipo_inventario", "=", "producto.id_tipo_inventario")
-                ->where("nota_venta.id_apertura_caja", $request)
-                ->get()
-                ->toArray();
+            $consulta_globa = "SELECT nota_venta_detalle.valor_venta,nota_venta_detalle.cantidad_venta_detalle,
+            producto.id_producto,codigo_producto,glosa_tipo_inventario,glosa_producto,
+            producto.id_tipo_inventario
+            from apertura_caja  INNER JOIN nota_venta USING (id_apertura_caja)
+            INNER JOIN nota_venta_detalle USING (id_nota_venta)
+            INNER JOIN producto USING (id_producto)
+            inner join tipo_inventario USING (id_tipo_inventario)
+            where apertura_caja.id_apertura_caja=$request
+            UNION ALL
+            select negocio_detalle.total_negocio_detalle as valor_venta,negocio_detalle.cantidad_negocio_detalle as cantidad_venta_detalle,producto.id_producto,codigo_producto,glosa_tipo_inventario,glosa_producto,
+            producto.id_tipo_inventario FROM apertura_caja INNER JOIN negocio USING (id_apertura_caja)
+            INNER JOIN negocio_detalle USING (id_negocio)
+            INNER JOIN producto USING (id_producto)
+            inner join tipo_inventario USING (id_tipo_inventario)
+            where apertura_caja.id_apertura_caja=$request";
+            $nota_venta_detalle = (new ConsultaGlobal())->ConsultaGlobal($consulta_globa);
         }
-
-        $id_producto_agrupado = $this->group_by('id_producto', $nota_venta_detalle);
+        foreach ($nota_venta_detalle as $key => $value) {
+            $element = [
+                "id_producto" => $value->id_producto,
+                "codigo_producto" => $value->codigo_producto,
+                "glosa_tipo_inventario" => $value->glosa_tipo_inventario,
+                'glosa_producto' => $value->glosa_producto,
+                "id_tipo_inventario" => $value->id_tipo_inventario,
+                "valor_venta" => $value->valor_venta,
+                "cantidad_venta_detalle" =>  $value->cantidad_venta_detalle,
+            ];
+            array_push($agrupar_datos, $element);
+        }
         $inventario = [];
+        $id_producto_agrupado = $this->group_by('id_producto', $agrupar_datos);
+        // $id_producto_agrupado_negocio = $this->group_by('id_producto', $negocio_detalle);
+        // echo json_encode($id_producto_agrupado_negocio);
+        // die();
         foreach ($id_producto_agrupado as $key => $value) {
             $valorventa = 0;
             $cantidadventa = 0;
@@ -273,6 +329,7 @@ class CajaController
             }
             array_push($inventario, $datos);
         }
+
         $inventario = $this->group_by('glosa_tipo_inventario', $inventario);
         return $inventario;
     }

@@ -17,7 +17,9 @@ class aperturacaja extends Model
         'apertura_caja_total_ventas',
         'apertura_caja_cantidad_ventas',
         'apertura_caja_descuento',
-        'apertura_caja_estado'
+        'apertura_caja_estado',
+        'apertura_caja_total_boleta',
+        'apertura_caja_total_factura'
     ];
 
     public $timestamps = false;

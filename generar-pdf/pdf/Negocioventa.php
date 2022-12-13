@@ -169,21 +169,50 @@
     </div>
     <br><br>
     <div style="text-align: center;">
-        <strong style="font-size: 15px;margin: 0px;"><?= $informacion_empresa['nombre_empresa'] ?></strong> <br>
-        <strong style="font-size: 9px;margin: 0px;">R.U.C.: <?= $informacion_empresa['ruc'] ?></strong><br>
-        <strong style="font-size: 9px;margin: 0px;">DE:<?= $informacion_empresa['razonSocial'] ?></strong><br>
-        <strong style="font-size: 9px;margin: 0px;"><?= $informacion_empresa['tipo_documento'] ?> DE VENTA ELECTRONICA</strong><br>
-        <strong style="font-size: 9px;margin: 0px;">SERIE:<?= $informacion_documento['serie'] ?> CORRELATIVO:<?= $informacion_documento['correlativo'] ?> </strong><br>
-        <strong style="font-size: 9px;margin: 0px;">DNI:<?= $informacion_cliente['dni_cliente'] ?></strong><br>
+        <strong style="font-size: 15px;margin: 0px;"><?= $informacion_empresa['nombre_empresa'] ?></strong>
     </div>
-    <br>
+    <div style="text-align: center;">
+        <strong style="font-size: 9px;margin: 0px;padding: 0px;">R.U.C.: <?= $informacion_empresa['ruc'] ?></strong>
+    </div>
+    <div style="text-align: center;">
+        <strong style="font-size: 9px;margin: 0px;padding: 0px;">DE:<?= $informacion_empresa['razonSocial'] ?></strong>
+    </div>
+    <div style="text-align: center;">
+        <strong style="font-size: 9px;margin: 0px;padding: 0px;"><?= $informacion_empresa['tipo_documento'] ?> DE VENTA ELECTRONICA</strong>
+    </div>
+    <div style="text-align: center;">
+        <strong style="font-size: 9px;margin: 0px;padding: 0px;">SERIE:<?= $informacion_documento['serie'] ?> CORRELATIVO:<?= $informacion_documento['correlativo'] ?> </strong>
+    </div>
+
+
     <div style="text-align: center;">
         <p style="font-size: 9px;margin: 0px;"><?= $informacion_empresa['direccion'] ?></p>
     </div>
     <div style="text-align: center;">
         <p style="font-size: 9px;margin: 0px;"><?= $informacion_empresa['departamento'] ?>-<?= $informacion_empresa['provincia'] ?>-<?= $informacion_empresa['distrito'] ?></p>
     </div>
-    <br>
+    <hr>
+    <div style="text-align: start;">
+        <p style="font-size: 9px;margin: 0px;">CLIENTE:<?= $informacion_cliente['nombre_cliente_completo'] ?></p>
+    </div>
+
+    <div style="text-align: start;">
+        <?php
+        if ($informacion_empresa['tipo_documento'] === "BOLETA") {
+        ?>
+            <p style="font-size: 9px;margin: 0px;">DNI:<?= $informacion_cliente['dni_cliente'] ?></p>
+        <?php
+        } else {
+        ?>
+            <p style="font-size: 9px;margin: 0px;">RUC:<?= $informacion_cliente['ruc_cliente'] ?></p>
+        <?php
+        }
+        ?>
+    </div>
+    <div style="text-align: start;">
+        <p style="font-size: 9px;margin: 0px;">DIRECCIÓN:<?= $informacion_cliente['direccion_cliente'] ?></p>
+    </div>
+    <hr>
     <table style="text-align:center;" class="t-desglose miTabla fs-small w-100">
         <thead>
             <tr>
@@ -296,7 +325,7 @@
     <table class="w-100 fs-small">
         <tr>
             <td class="w-100">
-                <p style="font-size: 9px;padding:0px">Cantidad de Producto:<?= count($negocios) ?></p>
+                <p style="font-size: 9px;padding:0px">Total Num. Items:<?= count($negocios) ?></p>
             </td>
         </tr>
     </table>

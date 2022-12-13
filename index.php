@@ -8,9 +8,22 @@ header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Conte
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE,OPTIONS");
 header("Allow: GET, POST, PUT, DELETE,OPTIONS");
 header('Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token , Authorization');
-
-
-
+if ($_SERVER['SERVER_NAME'] === 'sistemasdurand.com') {
+    $host = '162.241.60.172';
+    $username = 'siste268';
+    $password = 'zSj55IiL2+e8:E';
+    $base_datos = 'siste268_nota_venta';
+    $ruta_archivo='https://sistemasdurand.com/';
+    define('RUTA_ARCHIVO', $ruta_archivo);
+} else {
+    $dominio = "";
+    $host = 'localhost';
+    $username = 'root';
+    $password = '';
+    $base_datos = 'notaventa';
+    $ruta_archivo='http://localhost/MVC_APIVENTA/';
+    define('RUTA_ARCHIVO', $ruta_archivo);
+}
 require_once "vendor/autoload.php";
 require_once "config/Eloquentdatabase.php";
 require_once "config/database.php";
@@ -20,21 +33,11 @@ require_once "Helpers/JwtAuth.php";
 
 
 
-// require_once "EloquentsModel/Caja.php";
+if (isset($_GET['controller'])) {
+    $classname = $_GET['controller'] . "Controller";
+    include "Controllers/" . $classname . '.php';
+}
 
-// // $caja = Caja::where("estado_caja", 1)->get();
-
-// $datos = [
-//     'glosa_caja'=>"prueba2",
-//     'numero_caja'=>"1",
-//     'folio_caja'=>1,
-//     'fechacreacion_caja'=>date("Y-m-d"),
-// ];
-// Caja::create($datos);
-// echo "creado";
-// die;
-$classname = $_GET['controller'] . "Controller";
-include "Controllers/" . $classname . '.php';
 
 
 

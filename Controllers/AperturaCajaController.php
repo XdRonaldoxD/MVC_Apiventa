@@ -1,9 +1,12 @@
 <?php
 
 use Dompdf\Dompdf;
+
 require_once "EloquentsModel/aperturacaja.php";
 require_once "EloquentsModel/notaventa.php";
 require_once "EloquentsModel/Caja.php";
+require_once "EloquentsModel/Caja.php";
+require_once "EloquentsModel/ConsultaGlobal.php";
 require_once "Controllers/CajaController.php";
 
 
@@ -61,40 +64,48 @@ class AperturaCajaController
 
     public function VerificarCajaAbierta()
     {
-        $caja = aperturacaja::where('apertura_caja_estado', 1)->get();
+        
         $totalVentas = 0;
         $CantidadVentas = 0;
         $descuentoVentas = 0;
         $datoCaja = null;
-        foreach ($caja as $key => $elementos) {
-            $cajaAbierta = aperturacaja::where('id_caja', $elementos->id_caja)
-                ->where('apertura_caja_estado', 1)
-                ->first();
-            if (isset($cajaAbierta)) {
-                $datoCaja = $cajaAbierta;
-                $totalVentas = notaventa::select("valor_venta")->where('id_apertura_caja', $cajaAbierta->id_apertura_caja)
-                    ->get()
-                    ->sum("valor_venta");
-                $descuentoVentas = notaventa::select("descuento_negocio_venta")->where('id_apertura_caja', $cajaAbierta->id_apertura_caja)
-                    ->get()
-                    ->sum("descuento_negocio_venta");
-                $CantidadVentas = notaventa::where('id_apertura_caja', $cajaAbierta->id_apertura_caja)
-                    ->get()
-                    ->count("id_apertura_caja");
+        $ConsultaSingular = 0;
+        $totalVentaBoleta=0;
+        $totalVentaFactura=0;
+        $cajaAbierta = aperturacaja::where('id_caja', $_POST['id_caja'])->where('apertura_caja_estado', 1)->first();
+        if (isset($cajaAbierta)) {
+            $datoCaja = $cajaAbierta;
+            $totalVentas = notaventa::select("valor_venta")->where('id_apertura_caja', $cajaAbierta->id_apertura_caja)
+                ->get()
+                ->sum("valor_venta");
+            $descuentoVentas = notaventa::select("descuento_negocio_venta")->where('id_apertura_caja', $cajaAbierta->id_apertura_caja)
+                ->get()
+                ->sum("descuento_negocio_venta");
+            $CantidadVentas = notaventa::where('id_apertura_caja', $cajaAbierta->id_apertura_caja)
+                ->get()
+                ->count("id_apertura_caja");
+            $consulta="SELECT SUM(boleta.total_boleta) as total_boleta,SUM(factura.total_factura) as total_factura from negocio
+            LEFT JOIN boleta on boleta.id_negocio=negocio.id_negocio
+            LEFT JOIN factura on factura.id_negocio=negocio.id_negocio
+            where negocio.id_apertura_caja=$cajaAbierta->id_apertura_caja";    
+            $ConsultaSingular = (new ConsultaGlobal())->ConsultaSingular($consulta);
+            if (isset($ConsultaSingular)) {
+             $totalVentaBoleta=($ConsultaSingular->total_boleta) ? $ConsultaSingular->total_boleta :0; 
+             $totalVentaFactura= ($ConsultaSingular->total_factura) ? $ConsultaSingular->total_factura :0;
             }
         }
         $datos = array(
             "cajaAbierta" => $datoCaja,
             "totalVentas" => $totalVentas,
             "descuentoVentas" => $descuentoVentas,
-            "CantidadVentas" => $CantidadVentas
+            "CantidadVentas" => $CantidadVentas,
+            "totalVentaBoleta"=> $totalVentaBoleta,
+            "totalVentaFactura"=>$totalVentaFactura,
         );
-
-
-       echo json_encode($datos);
+        echo json_encode($datos);
     }
 
- 
+
 
 
     public function ReporteVentaCerrado($id_apertura_caja)
@@ -110,6 +121,8 @@ class AperturaCajaController
 
         $caja = new CajaController();
         $inventario = $caja->LogicaNotaVenta($id_apertura_caja);
+        // echo json_encode($inventario);
+        // die();
         $fechaInicio = null;
         $fechaFin = null;
         ob_start();
@@ -128,7 +141,7 @@ class AperturaCajaController
         // $fecha = date("Y-m-d");
         // Output the generated PDF to Browser
         // $dompdf->stream("Cierre_Caja_$fecha.pdf", array("Attachment" => 0));
-         return $filename;
+        return $filename;
     }
     public function ReporteCajaCerrado($id_apertura_caja)
     {
@@ -147,13 +160,12 @@ class AperturaCajaController
             ->where('id_apertura_caja', $id_apertura_caja)
             ->first()
             ->toArray();
-        // dd($cierreCaja);
         $valorventa = $cierreCaja['apertura_caja_total_ventas'];
         // print_r($valorventa);
         // die;
-        if ($valorventa==0) {
-            $codigoBarra='';
-        }else{
+        if ($valorventa == 0) {
+            $codigoBarra = '';
+        } else {
             $codigoBarra = base64_encode(file_get_contents((new \chillerlan\QRCode\QRCode())->render($valorventa)));
         }
         // print_r($codigoBarra);
@@ -175,7 +187,7 @@ class AperturaCajaController
         // $fecha = date("Y-m-d");
         // Output the generated PDF to Browser
         // $dompdf->stream("Cierre_Caja_$fecha.pdf", array("Attachment" => 0));
-         return $filename;
+        return $filename;
     }
 
 
@@ -188,6 +200,8 @@ class AperturaCajaController
                 "apertura_caja_fecha" => date('Y-m-d'),
                 "apertura_caja_fechainicio" => date('Y-m-d H:i:s'),
                 'apertura_caja_monto_inicial' => ($_POST['apertura_caja_monto_inicial'] === 'undefined') ? null : $_POST['apertura_caja_monto_inicial'],
+                'apertura_caja_total_boleta'=>null,
+                'apertura_caja_total_factura'=>null
             );
             aperturacaja::create($crearApertura);
             $respuesta = "Creado";
@@ -198,6 +212,8 @@ class AperturaCajaController
             $caja->apertura_caja_total_ventas = $_POST['apertura_caja_total_ventas'];
             $caja->apertura_caja_descuento = $_POST['apertura_caja_descuento'];
             $caja->apertura_caja_cantidad_ventas = $_POST['apertura_caja_cantidad_ventas'];
+            $caja->apertura_caja_total_boleta=$_POST['apertura_caja_total_boleta'];
+            $caja->apertura_caja_total_factura=$_POST['apertura_caja_total_factura'];
             $caja->apertura_caja_estado = 0;
             $caja->save();
 
@@ -215,24 +231,21 @@ class AperturaCajaController
     public function VisualizaCajaCerrado()
     {
         $caja = aperturacaja::where("id_apertura_caja", $_POST['id_apertura_caja'])->first();
-        $datos=[
-            "venta_path" => "http://localhost/MVC_APIVENTA/archivos/VentaCerrado/$caja->apertura_caja_venta_path",
-            "ticket_path" =>"http://localhost/MVC_APIVENTA/archivos/TicketCerrado/$caja->apertura_caja_ticket_path"
+        $datos = [
+            "venta_path" => RUTA_ARCHIVO."/archivos/VentaCerrado/$caja->apertura_caja_venta_path",
+            "ticket_path" => RUTA_ARCHIVO."/archivos/TicketCerrado/$caja->apertura_caja_ticket_path"
         ];
         echo json_encode($datos);
     }
 
-    public function VerificarCajaAbierto(){
-        $aperturar=aperturacaja::select('id_apertura_caja')
-        ->where("apertura_caja_estado",1)->first();
+    public function VerificarCajaAbierto()
+    {
+        $aperturar = aperturacaja::select('id_apertura_caja')
+            ->where("apertura_caja_estado", 1)->first();
         if (isset($aperturar)) {
             echo json_encode($aperturar);
-        }else{
+        } else {
             echo json_encode([]);
         }
-  
     }
-
-
-
 }

@@ -154,7 +154,7 @@
 
 
     <div style="text-align: center;">
-        <img style="width:120px; height:auto; margin:0px 0px 0px 70px" src="data:image/png;base64,<?=$imagen?>" alt="" />
+        <img style="width:120px; height:auto; margin:0px 0px 0px 70px" src="data:image/png;base64,<?= $imagen ?>" alt="" />
     </div>
     <br><br>
     <div style="text-align: center;">
@@ -176,7 +176,7 @@
     <table class="w-100 fs-small">
         <tr>
             <td class="w-50">
-                <p><strong> Vendedor:</strong> <?=$cierreCaja['nombre_usuario']?> <?=$cierreCaja['apellido_usuario']?></p>
+                <p><strong> Vendedor:</strong> <?= $cierreCaja['nombre_usuario'] ?> <?= $cierreCaja['apellido_usuario'] ?></p>
             </td>
 
         </tr>
@@ -228,7 +228,7 @@
 
             </td>
             <td class="w-50">
-                <p style="font-size: 9px;padding:0px">S/<?= number_format($cierreCaja['apertura_caja_monto_inicial'],2)  ?> </p>
+                <p style="font-size: 9px;padding:0px">S/<?= number_format($cierreCaja['apertura_caja_monto_inicial'], 2)  ?> </p>
 
             </td>
 
@@ -242,7 +242,7 @@
 
             </td>
             <td class="w-50">
-                <p style="font-size: 9px;padding:0px">S/<?= number_format($cierreCaja['apertura_caja_monto_final'],2)  ?> </p>
+                <p style="font-size: 9px;padding:0px">S/<?= number_format($cierreCaja['apertura_caja_monto_final'], 2)  ?> </p>
 
             </td>
 
@@ -253,33 +253,51 @@
         <tr>
             <td class="w-50">
                 <p style="font-size: 9px;padding:0px"><strong>Descuento total de Ventas:</strong></p>
-
             </td>
             <td class="w-50">
-                <p style="font-size: 9px;padding:0px">S/<?= number_format($cierreCaja['apertura_caja_descuento'],2)  ?> </p>
-
+                <p style="font-size: 9px;padding:0px">S/<?= number_format($cierreCaja['apertura_caja_descuento'], 2)  ?> </p>
             </td>
-
         </tr>
     </table>
 
     <table class="w-100 fs-small">
         <tr>
             <td class="w-50">
-                <p style="font-size: 9px;padding:0px"><strong>Monto Total Ventas:</strong></p>
-
+                <p style="font-size: 9px;padding:0px"><strong>Monto Total Nota De Venta:</strong></p>
             </td>
             <td class="w-50">
-                <p style="font-size: 9px;padding:0px">S/<?= number_format($cierreCaja['apertura_caja_total_ventas'],2)  ?> </p>
-
+                <p style="font-size: 9px;padding:0px">S/<?= number_format($cierreCaja['apertura_caja_total_ventas'], 2)  ?> </p>
             </td>
-
         </tr>
     </table>
 
+    <table class="w-100 fs-small">
+        <tr>
+            <td class="w-50">
+                <p style="font-size: 9px;padding:0px"><strong>Monto Total Boleta Electronica:</strong></p>
+            </td>
+            <td class="w-50">
+                <p style="font-size: 9px;padding:0px">S/<?= number_format($cierreCaja['apertura_caja_total_boleta'], 2)  ?> </p>
+            </td>
+        </tr>
+    </table>
+
+    <table class="w-100 fs-small">
+        <td class="w-50">
+            <p style="font-size: 9px;padding:0px"><strong>Monto Total Factura Electronica:</strong></p>
+
+        </td>
+        <td class="w-50">
+            <p style="font-size: 9px;padding:0px">S/<?= number_format($cierreCaja['apertura_caja_total_factura'], 2)  ?> </p>
+        </td>
+    </table>
+
+
+
+
 
     <div style="width: 100%">
-        <img style="margin-left: 80px;" src="data:image/png;base64,<?=$codigoBarra?>" alt="" />
+        <img style="margin-left: 80px;" src="data:image/png;base64,<?= $codigoBarra ?>" alt="" />
 
     </div>
 

@@ -7,7 +7,7 @@ class ProductoHistorial extends Model
     protected $fillable = [
         'id_producto_historial',
         'id_usuario',
-        'tipo_movimiento',
+        'id_tipo_movimiento',
         'id_producto',
         'cantidadmovimiento_producto_historial',
         'fecha_producto_historial',
