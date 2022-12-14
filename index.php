@@ -30,16 +30,10 @@ require_once "config/database.php";
 require_once "config/Eventopusher.php";
 require_once "Helpers/helpers.php";
 require_once "Helpers/JwtAuth.php";
-
-
 if (isset($_GET['controller'])) {
     $classname = $_GET['controller'] . "Controller";
     include "Controllers/" . $classname . '.php';
 }
-
-
-
-
 //REQUES VEO SI ESTAN ENVIANDO EL CONTROLADOR Y SU ACCION SI NO ENVIA NO ENTRARA 
 if ($_SERVER['REQUEST_METHOD'] === "POST" || $_SERVER['REQUEST_METHOD'] === "GET") {
     $headers = apache_request_headers();
