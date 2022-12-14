@@ -32,7 +32,6 @@ require_once "Helpers/helpers.php";
 require_once "Helpers/JwtAuth.php";
 
 
-
 if (isset($_GET['controller'])) {
     $classname = $_GET['controller'] . "Controller";
     include "Controllers/" . $classname . '.php';
