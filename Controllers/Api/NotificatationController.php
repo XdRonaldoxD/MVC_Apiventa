@@ -10,7 +10,7 @@ class NotificatationController
         $json = file_get_contents('php://input');
         $data = json_decode($json);
         $datos = [
-            'json_notificacion' => $data,
+            'json_notificacion' => json_encode($data),
             'fecha_creacion_notificacion' => date('Y-m-d H:i:s')
         ];
         Notificacion::create($datos);
