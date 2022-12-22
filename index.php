@@ -8,12 +8,13 @@ header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Conte
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE,OPTIONS");
 header("Allow: GET, POST, PUT, DELETE,OPTIONS");
 header('Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token , Authorization');
+
 if ($_SERVER['SERVER_NAME'] === 'sistemasdurand.com') {
     $host = '162.241.60.172';
     $username = 'siste268';
     $password = 'zSj55IiL2+e8:E';
     $base_datos = 'siste268_nota_venta';
-    $ruta_archivo='https://sistemasdurand.com/';
+    $ruta_archivo = 'https://sistemasdurand.com/';
     define('RUTA_ARCHIVO', $ruta_archivo);
 } else {
     $dominio = "";
@@ -21,7 +22,7 @@ if ($_SERVER['SERVER_NAME'] === 'sistemasdurand.com') {
     $username = 'root';
     $password = '';
     $base_datos = 'notaventa';
-    $ruta_archivo='http://localhost/MVC_APIVENTA/';
+    $ruta_archivo = 'http://localhost/MVC_APIVENTA/';
     define('RUTA_ARCHIVO', $ruta_archivo);
 }
 require_once "vendor/autoload.php";
@@ -34,6 +35,13 @@ if (isset($_GET['controller'])) {
     $classname = $_GET['controller'] . "Controller";
     include "Controllers/" . $classname . '.php';
 }
+
+//API
+if (isset($_GET['Apicontroller'])) {
+    $classname = $_GET['Apicontroller'] . "Controller";
+    include "Controllers/Api/" . $classname . '.php';
+}
+//
 //REQUES VEO SI ESTAN ENVIANDO EL CONTROLADOR Y SU ACCION SI NO ENVIA NO ENTRARA 
 if ($_SERVER['REQUEST_METHOD'] === "POST" || $_SERVER['REQUEST_METHOD'] === "GET") {
     $headers = apache_request_headers();
