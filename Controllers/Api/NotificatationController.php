@@ -14,4 +14,8 @@ class NotificatationController{
         echo json_encode('ok');
     }
 
+    public function SuccessMercadoPago(){
+        echo json_encode('ok');
+    }
+
 }

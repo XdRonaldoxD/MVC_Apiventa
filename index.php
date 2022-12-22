@@ -76,9 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" || $_SERVER['REQUEST_METHOD'] === "GET
             }
         }
     } else {
-        if (isset($_GET['controller'])) {
+        if (isset($_GET['controller']) && $_GET['controller']=='Usuario') {
             $nombre_controlador = $_GET['controller'] . "Controller";
-        } else {
+        } else if (isset($_GET['Apicontroller'])){
+            $nombre_controlador = $_GET['Apicontroller'] . "Controller";
+        } else{
             echo "No exite la Pagina";
             die(http_response_code(403));
         }
