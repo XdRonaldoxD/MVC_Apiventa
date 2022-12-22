@@ -7,8 +7,10 @@ class NotificatationController
 
     public function NotificarMercadoPago()
     {
+        $json = file_get_contents('php://input');
+        $data = json_decode($json);
         $datos = [
-            'json_notificacion' => isset($_POST["id"]) ? $_POST["id"] : '',
+            'json_notificacion' => $data->id,
             'fecha_creacion_notificacion' => date('Y-m-d H:i:s')
         ];
         Notificacion::create($datos);
