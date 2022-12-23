@@ -24,8 +24,13 @@ class NotificatationController
 
     public function SuccessMercadoPago()
     {
+        $id_notificacion_mercadopago=null;
+        $Notificacion=NotificacionMercadoPago::where("date_create_id",$_GET['collection_id'])->first();
+        if (isset($Notificacion)) {
+            $id_notificacion_mercadopago=$Notificacion->id_notificacion_mercadopago;
+        }
         $data = [
-            'id_notificacion_mercadopago' => null,
+            'id_notificacion_mercadopago' => $id_notificacion_mercadopago,
             'collection_id_success_mercadopago' => $_GET['collection_id'],
             'collection_status_success_mercadopago' => $_GET['collection_status'],
             'payment_id_success_mercadopago' => $_GET['payment_id'],
@@ -40,8 +45,8 @@ class NotificatationController
             'fecha_creacion_success_mercadopago' => date('Y-m-d H:i:s')
         ];
         SuccessMercadoPago::create($data);
-        echo json_encode('ok');
-        // header('Location: https://boticas.sistemasdurand.com/');
-        // die;
+        // echo json_encode('ok');
+        header('Location: https://boticas.sistemasdurand.com/');
+        die;
     }
 }
