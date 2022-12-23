@@ -46,7 +46,7 @@ class NotificatationController
         ];
         SuccessMercadoPago::create($data);
         echo json_encode('Espere porfavor...');
-        header("refresh:10; url=https://boticas.sistemasdurand.com/");
+        header("refresh:10; url=https://www.google.com/");
       
     }
 }
