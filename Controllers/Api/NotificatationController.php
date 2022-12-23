@@ -45,8 +45,8 @@ class NotificatationController
             'fecha_creacion_success_mercadopago' => date('Y-m-d H:i:s')
         ];
         SuccessMercadoPago::create($data);
-        // echo json_encode('ok');
-        header('Location: https://boticas.sistemasdurand.com/');
-        die;
+        echo json_encode('Espere porfavor...');
+        header("refresh:10; url=https://boticas.sistemasdurand.com/");
+      
     }
 }
