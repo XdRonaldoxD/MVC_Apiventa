@@ -25,7 +25,7 @@ class NotificatationController
     public function SuccessMercadoPago()
     {
         $id_notificacion_mercadopago=null;
-        $Notificacion=NotificacionMercadoPago::where("date_create_id",$_GET['collection_id'])->first();
+        $Notificacion=NotificacionMercadoPago::where("data_created_id",$_GET['collection_id'])->first();
         if (isset($Notificacion)) {
             $id_notificacion_mercadopago=$Notificacion->id_notificacion_mercadopago;
         }
@@ -45,8 +45,8 @@ class NotificatationController
             'fecha_creacion_success_mercadopago' => date('Y-m-d H:i:s')
         ];
         SuccessMercadoPago::create($data);
-        echo json_encode('Espere porfavor...');
-        // header("refresh:10; url=https://www.google.com/");
+        // echo json_encode('Espere porfavor...');
+        header("refresh:0; url=https://www.google.com/");
       
     }
 }
