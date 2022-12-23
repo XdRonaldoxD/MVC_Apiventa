@@ -12,9 +12,9 @@ class NotificatationController
         $data = json_decode($json);
         if (isset($data->data->id)) {
             $datos = [
-                'json_notificacionmercadopago' => json_encode($data),
-                'id_notificacion_mercadopago' => $data->data->id,
-                'fecha_creacion_notificacionmercadopago' => date('Y-m-d H:i:s')
+                'json_notificacion_mercadopago' => json_encode($data),
+                'data_created_id' => $data->data->id,
+                'fecha_creacion_notificacion_mercadopago' => date('Y-m-d H:i:s')
             ];
             NotificacionMercadoPago::create($datos);
         }
@@ -41,5 +41,7 @@ class NotificatationController
         ];
         SuccessMercadoPago::create($data);
         echo json_encode('ok');
+        // header('Location: https://boticas.sistemasdurand.com/');
+        // die;
     }
 }
