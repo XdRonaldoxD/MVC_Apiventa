@@ -1,6 +1,7 @@
 <?php
 
-require_once "EloquentsModel/Notificacion.php";
+require_once "EloquentsModel/NotificacionMercadoPago.php";
+require_once "EloquentsModel/SuccessMercadoPago.php";
 
 class NotificatationController
 {
@@ -9,16 +10,36 @@ class NotificatationController
     {
         $json = file_get_contents('php://input');
         $data = json_decode($json);
-        $datos = [
-            'json_notificacion' => json_encode($data),
-            'fecha_creacion_notificacion' => date('Y-m-d H:i:s')
-        ];
-        Notificacion::create($datos);
+        if (isset($data->data->id)) {
+            $datos = [
+                'json_notificacionmercadopago' => json_encode($data),
+                'id_notificacion_mercadopago' => $data->data->id,
+                'fecha_creacion_notificacionmercadopago' => date('Y-m-d H:i:s')
+            ];
+            NotificacionMercadoPago::create($datos);
+        }
+
         echo json_encode('ok');
     }
 
     public function SuccessMercadoPago()
     {
+        $data = [
+            'id_notificacion_mercadopago' => null,
+            'collection_id_success_mercadopago' => $_GET['collection_id'],
+            'collection_status_success_mercadopago' => $_GET['collection_status'],
+            'payment_id_success_mercadopago' => $_GET['payment_id'],
+            'status_success_mercadopago' => $_GET['status'],
+            'external_reference_success_mercadopago' => $_GET['external_reference'],
+            'payment_type_success_mercadopago' => $_GET['payment_type'],
+            'merchant_order_id_success_mercadopago' => $_GET['merchant_order_id'],
+            'preference_id_success_mercadopago' => $_GET['preference_id'],
+            'site_id_success_mercadopago' => $_GET['site_id'],
+            'processing_mode_success_mercadopago' => $_GET['processing_mode'],
+            'merchant_account_id_success_mercadopago' => $_GET['merchant_account_id'],
+            'fecha_creacion_success_mercadopago' => date('Y-m-d H:i:s')
+        ];
+        SuccessMercadoPago::create($data);
         echo json_encode('ok');
     }
 }
